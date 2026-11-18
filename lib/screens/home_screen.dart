@@ -1,6 +1,6 @@
-import 'step_sensor_test_screen.dart';
 
 import 'package:flutter/material.dart';
+import 'adventure_map_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -17,7 +17,10 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 28,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -53,7 +56,10 @@ class HomeScreen extends StatelessWidget {
                   const CircleAvatar(
                     radius: 23,
                     backgroundColor: lightGreen,
-                    child: Icon(Icons.eco_rounded, color: primary),
+                    child: Icon(
+                      Icons.eco_rounded,
+                      color: primary,
+                    ),
                   ),
                 ],
               ),
@@ -68,9 +74,9 @@ class HomeScreen extends StatelessWidget {
                   color: lightGreen,
                   borderRadius: BorderRadius.circular(28),
                 ),
-                child: Column(
+                child: const Column(
                   children: [
-                    const Text(
+                    Text(
                       'Meet Spud!',
                       style: TextStyle(
                         fontSize: 25,
@@ -78,15 +84,10 @@ class HomeScreen extends StatelessWidget {
                         color: darkText,
                       ),
                     ),
-
-                    const SizedBox(height: 22),
-
-                    // Temporary mascot built with Flutter
-                    const SpudMascot(),
-
-                    const SizedBox(height: 22),
-
-                    const Text(
+                    SizedBox(height: 22),
+                    SpudMascot(),
+                    SizedBox(height: 22),
+                    Text(
                       '"I\'ve been sitting all day. Help!"',
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -95,10 +96,8 @@ class HomeScreen extends StatelessWidget {
                         color: primary,
                       ),
                     ),
-
-                    const SizedBox(height: 12),
-
-                    const Text(
+                    SizedBox(height: 12),
+                    Text(
                       'Help Spud explore the world by '
                       'completing short movement challenges.',
                       textAlign: TextAlign.center,
@@ -114,7 +113,7 @@ class HomeScreen extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              // Adventure button
+              // Start Adventure button
               SizedBox(
                 width: double.infinity,
                 height: 58,
@@ -123,7 +122,8 @@ class HomeScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const StepSensorTestScreen(),
+                        builder: (context) =>
+                            const AdventureMapScreen(),
                       ),
                     );
                   },
@@ -161,14 +161,19 @@ class HomeScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(22),
-                  border: Border.all(color: const Color(0xFFE4E9E2)),
+                  border: Border.all(
+                    color: const Color(0xFFE4E9E2),
+                  ),
                 ),
                 child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.directions_walk_rounded, color: primary),
+                        Icon(
+                          Icons.directions_walk_rounded,
+                          color: primary,
+                        ),
                         SizedBox(width: 12),
                         Expanded(
                           child: Text(
@@ -202,7 +207,10 @@ class HomeScreen extends StatelessWidget {
               const Center(
                 child: Text(
                   'No pressure. No streaks. Just movement.',
-                  style: TextStyle(color: secondaryText, fontSize: 12),
+                  style: TextStyle(
+                    color: secondaryText,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ],
@@ -213,8 +221,7 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-// Simple Spud character drawn using Flutter widgets.
-// We can replace this with our final mascot asset later.
+// Spud mascot built using Flutter widgets.
 class SpudMascot extends StatelessWidget {
   const SpudMascot({super.key});
 
@@ -249,7 +256,10 @@ class SpudMascot extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFF3C879),
                 borderRadius: BorderRadius.circular(55),
-                border: Border.all(color: const Color(0xFFB98A46), width: 2),
+                border: Border.all(
+                  color: const Color(0xFFB98A46),
+                  width: 2,
+                ),
               ),
               child: Stack(
                 children: [
