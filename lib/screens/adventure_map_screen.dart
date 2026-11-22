@@ -1,31 +1,75 @@
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'sleepy_forest_screen.dart';
 
-class AdventureMapScreen extends StatelessWidget {
+class AdventureMapScreen extends StatefulWidget {
   const AdventureMapScreen({super.key});
 
+  @override
+  State<AdventureMapScreen> createState() =>
+      _AdventureMapScreenState();
+}
+
+class _AdventureMapScreenState extends State<AdventureMapScreen> {
   static const Color background = Color(0xFFF8F7F3);
   static const Color primary = Color(0xFF3F6651);
   static const Color darkText = Color(0xFF25332E);
   static const Color secondaryText = Color(0xFF66736C);
   static const Color lightGreen = Color(0xFFE4EDE5);
 
-  // Open the playable Sleepy Forest level.
-  void _openSleepyForest(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const SleepyForestScreen(),
-      ),
-    );
+  bool _forestCompleted = false;
+  bool _loadingProgress = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProgress();
   }
 
-  // Display a message for future levels.
-  void _showComingSoon(
-    BuildContext context,
-    String location,
-  ) {
+  Future<void> _loadProgress() async {
+    try {
+      final preferences = await SharedPreferences.getInstance();
+      final completed =
+          preferences.getBool('sleepy_forest_completed') ?? false;
+
+      if (!mounted) return;
+
+      setState(() {
+        _forestCompleted = completed;
+        _loadingProgress = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+
+      setState(() {
+        _loadingProgress = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not load saved progress.'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _openSleepyForest() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const SleepyForestScreen(),
+      ),
+    );
+
+    if (!mounted) return;
+
+    // Refresh progress when the player returns.
+    await _loadProgress();
+  }
+
+  void _showComingSoon(String location) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -41,7 +85,6 @@ class AdventureMapScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: background,
-
       appBar: AppBar(
         backgroundColor: background,
         foregroundColor: darkText,
@@ -49,25 +92,15 @@ class AdventureMapScreen extends StatelessWidget {
         centerTitle: true,
         title: const Text(
           'Adventure Map',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
-
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(
-            24,
-            16,
-            24,
-            32,
-          ),
-
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Page heading
               const Text(
                 'Where to, adventurer?',
                 style: TextStyle(
@@ -76,9 +109,7 @@ class AdventureMapScreen extends StatelessWidget {
                   color: darkText,
                 ),
               ),
-
               const SizedBox(height: 8),
-
               const Text(
                 'Choose a destination and help Spud explore '
                 'the world, one step at a time.',
@@ -88,7 +119,6 @@ class AdventureMapScreen extends StatelessWidget {
                   color: secondaryText,
                 ),
               ),
-
               const SizedBox(height: 24),
 
               // Decorative world map
@@ -99,10 +129,8 @@ class AdventureMapScreen extends StatelessWidget {
                   color: lightGreen,
                   borderRadius: BorderRadius.circular(26),
                 ),
-
                 child: Stack(
                   children: [
-                    // Forest
                     const Positioned(
                       top: 20,
                       left: 25,
@@ -112,8 +140,6 @@ class AdventureMapScreen extends StatelessWidget {
                         color: Color(0xFF78A786),
                       ),
                     ),
-
-                    // Mountain
                     const Positioned(
                       top: 45,
                       right: 30,
@@ -123,8 +149,6 @@ class AdventureMapScreen extends StatelessWidget {
                         color: Color(0xFF7F9C85),
                       ),
                     ),
-
-                    // Adventure route
                     const Positioned(
                       bottom: 20,
                       left: 105,
@@ -134,8 +158,6 @@ class AdventureMapScreen extends StatelessWidget {
                         color: primary,
                       ),
                     ),
-
-                    // Compass
                     const Center(
                       child: Icon(
                         Icons.explore_rounded,
@@ -143,8 +165,6 @@ class AdventureMapScreen extends StatelessWidget {
                         color: primary,
                       ),
                     ),
-
-                    // World label
                     Positioned(
                       bottom: 14,
                       right: 16,
@@ -157,7 +177,6 @@ class AdventureMapScreen extends StatelessWidget {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
                         ),
-
                         child: const Text(
                           'Spud\'s World 🥔',
                           style: TextStyle(
@@ -174,32 +193,51 @@ class AdventureMapScreen extends StatelessWidget {
 
               const SizedBox(height: 26),
 
-              const Text(
-                'Explore locations',
-                style: TextStyle(
-                  fontSize: 19,
-                  fontWeight: FontWeight.bold,
-                  color: darkText,
-                ),
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Explore locations',
+                      style: TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.bold,
+                        color: darkText,
+                      ),
+                    ),
+                  ),
+                  if (_forestCompleted)
+                    const Text(
+                      '1 / 3 explored',
+                      style: TextStyle(
+                        color: primary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                ],
               ),
-
               const SizedBox(height: 16),
 
-              // LEVEL 1: Sleepy Forest
               _LocationCard(
                 title: 'Sleepy Forest',
-                subtitle: 'Help Spud reach the forest cabin!',
+                subtitle: _forestCompleted
+                    ? 'Spud made it to the cabin! Play again?'
+                    : 'Help Spud reach the forest cabin!',
                 icon: Icons.forest_rounded,
                 iconColor: const Color(0xFF4E8660),
                 tileColor: const Color(0xFFE2EEE2),
-                label: 'PLAY NOW',
+                label: _loadingProgress
+                    ? 'LOADING...'
+                    : _forestCompleted
+                        ? 'COMPLETED ✓'
+                        : 'PLAY NOW',
                 available: true,
-                onTap: () => _openSleepyForest(context),
+                completed: _forestCompleted,
+                onTap: _openSleepyForest,
               ),
 
               const SizedBox(height: 14),
 
-              // LEVEL 2: Wobbly Beach
               _LocationCard(
                 title: 'Wobbly Beach',
                 subtitle: 'A sunny adventure awaits.',
@@ -208,15 +246,12 @@ class AdventureMapScreen extends StatelessWidget {
                 tileColor: const Color(0xFFF7EBD6),
                 label: 'COMING SOON',
                 available: false,
-                onTap: () => _showComingSoon(
-                  context,
-                  'Wobbly Beach',
-                ),
+                completed: false,
+                onTap: () => _showComingSoon('Wobbly Beach'),
               ),
 
               const SizedBox(height: 14),
 
-              // LEVEL 3: Potato Mountain
               _LocationCard(
                 title: 'Potato Mountain',
                 subtitle: 'A mountain-sized adventure for Spud.',
@@ -225,15 +260,12 @@ class AdventureMapScreen extends StatelessWidget {
                 tileColor: const Color(0xFFE8E7F2),
                 label: 'COMING SOON',
                 available: false,
-                onTap: () => _showComingSoon(
-                  context,
-                  'Potato Mountain',
-                ),
+                completed: false,
+                onTap: () => _showComingSoon('Potato Mountain'),
               ),
 
               const SizedBox(height: 28),
 
-              // Footer
               const Center(
                 child: Text(
                   'No pressure. No streaks. Just movement.',
@@ -252,7 +284,6 @@ class AdventureMapScreen extends StatelessWidget {
   }
 }
 
-// Reusable card for each adventure location.
 class _LocationCard extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -261,6 +292,7 @@ class _LocationCard extends StatelessWidget {
   final Color tileColor;
   final String label;
   final bool available;
+  final bool completed;
   final VoidCallback onTap;
 
   const _LocationCard({
@@ -271,31 +303,35 @@ class _LocationCard extends StatelessWidget {
     required this.tileColor,
     required this.label,
     required this.available,
+    required this.completed,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    const primary = Color(0xFF3F6651);
+    const darkText = Color(0xFF25332E);
+    const secondaryText = Color(0xFF66736C);
+
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(22),
-
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(22),
-
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
-              color: const Color(0xFFE4E9E2),
+              color: completed
+                  ? const Color(0xFF9DC6A5)
+                  : const Color(0xFFE4E9E2),
+              width: completed ? 1.5 : 1,
             ),
           ),
-
           child: Row(
             children: [
-              // Location icon
               Container(
                 width: 76,
                 height: 86,
@@ -303,17 +339,13 @@ class _LocationCard extends StatelessWidget {
                   color: tileColor,
                   borderRadius: BorderRadius.circular(18),
                 ),
-
                 child: Icon(
                   icon,
                   size: 43,
                   color: iconColor,
                 ),
               ),
-
               const SizedBox(width: 14),
-
-              // Location information
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,31 +353,25 @@ class _LocationCard extends StatelessWidget {
                     Text(
                       title,
                       style: const TextStyle(
-                        color: AdventureMapScreen.darkText,
+                        color: darkText,
                         fontSize: 17,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     const SizedBox(height: 6),
-
                     Text(
                       subtitle,
                       style: const TextStyle(
-                        color: AdventureMapScreen.secondaryText,
+                        color: secondaryText,
                         fontSize: 12,
                         height: 1.4,
                       ),
                     ),
-
                     const SizedBox(height: 10),
-
                     Text(
                       label,
                       style: TextStyle(
-                        color: available
-                            ? AdventureMapScreen.primary
-                            : AdventureMapScreen.secondaryText,
+                        color: available ? primary : secondaryText,
                         fontWeight: FontWeight.bold,
                         fontSize: 10,
                         letterSpacing: 0.8,
@@ -354,18 +380,15 @@ class _LocationCard extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(width: 6),
-
-              // Arrow for playable level, lock for future levels
               Icon(
-                available
-                    ? Icons.arrow_forward_ios_rounded
-                    : Icons.lock_outline_rounded,
-                color: available
-                    ? AdventureMapScreen.primary
-                    : AdventureMapScreen.secondaryText,
-                size: 18,
+                completed
+                    ? Icons.check_circle_rounded
+                    : available
+                        ? Icons.arrow_forward_ios_rounded
+                        : Icons.lock_outline_rounded,
+                color: available ? primary : secondaryText,
+                size: completed ? 24 : 18,
               ),
             ],
           ),
